@@ -1,0 +1,7 @@
+
+# Text editor junks
+.vscode/
+
+# Compilation
+**/target
+*/**/*.class
