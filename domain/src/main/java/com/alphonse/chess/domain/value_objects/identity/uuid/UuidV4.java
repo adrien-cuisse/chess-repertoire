@@ -43,7 +43,7 @@ public final class UuidV4 implements IUuid
 
     final public int version()
     {
-        return this.uuid.version();
+        return 4;
     }
 
     final public Variant variant()
@@ -67,6 +67,4 @@ public final class UuidV4 implements IUuid
         generator.nextBytes(randomBytes);
         return randomBytes;
     }
-
-    // TODO: check version digit
 }
