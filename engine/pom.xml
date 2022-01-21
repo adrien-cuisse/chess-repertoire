@@ -28,7 +28,6 @@
       <scope>test</scope>
     </dependency>
 
-
     <!-- jUnit data-providers -->
     <dependency>
       <groupId>com.tngtech.junit.dataprovider</groupId>
