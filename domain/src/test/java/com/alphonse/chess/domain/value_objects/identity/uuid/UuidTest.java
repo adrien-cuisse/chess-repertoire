@@ -129,7 +129,7 @@ public final class UuidTest
         // then it should contain the version number as 13th digit (skipping dashes)
         assertEquals(
             "Version should be set as the 13th digit",
-            String.format("%d", expectedVersion).charAt(0),
+            Character.forDigit(expectedVersion, 16),
             format.charAt(14)
         );
     }

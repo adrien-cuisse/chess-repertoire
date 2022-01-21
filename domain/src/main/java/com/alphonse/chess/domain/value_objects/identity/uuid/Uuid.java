@@ -10,8 +10,6 @@ final class Uuid implements IUuid
 {
     protected final byte[] bytes;
 
-    private final static String base16 = "0123456789abcdef";
-
     protected Uuid(final byte[] bytes) throws InvalidBytesCountException
     {
         if (bytes.length != 16)
@@ -40,7 +38,7 @@ final class Uuid implements IUuid
         {
             throw new InvalidDigitsCountException(rfcCompliantUuid, digits.length);
         }
-        if (digits[12] != String.format("%d", expectedVersion).charAt(0))
+        if (digits[12] != Character.forDigit(expectedVersion, 10))
         {
             throw new InvalidVersionException(rfcCompliantUuid, expectedVersion);
         }
@@ -49,7 +47,9 @@ final class Uuid implements IUuid
 
         for (int processedDigits = 0; processedDigits < digits.length; processedDigits += 2)
         {
-            this.bytes[processedDigits / 2] = (byte) ((base16.indexOf(digits[processedDigits]) << 4) | (base16.indexOf(digits[processedDigits + 1])));
+            byte highNibble = (byte) ((Character.digit(digits[processedDigits], 16) << 4));
+            byte lowNibble = (byte) (Character.digit(digits[processedDigits + 1], 16));
+            this.bytes[processedDigits / 2] = (byte) (highNibble | lowNibble);
         }
     }
 
@@ -88,6 +88,11 @@ final class Uuid implements IUuid
 
     public final String toNative()
     {
+        return this.toString();
+    }
+
+    public final String toString()
+    {
         String format = "";
 
         int bytesCount = 0;
@@ -97,8 +102,8 @@ final class Uuid implements IUuid
         {
             format += String.format(
                 "%c%c",
-                base16.charAt((currentByte & 0b1111_1111) >> 4),
-                base16.charAt((currentByte & 0b1111_1111) & 0x0f)
+                Character.forDigit((currentByte & 0b1111_0000) >> 4, 16),
+                Character.forDigit(currentByte & 0b0000_1111, 16)
             );
             bytesCount++;
             if (dashesPosition.contains(bytesCount))
@@ -108,11 +113,6 @@ final class Uuid implements IUuid
         }
 
         return format;
-    }
-
-    public final String toString()
-    {
-        return this.toNative();
     }
 
     private final static byte[] interlopVersionInTimestampHigh(final byte[] bytes, final int version)
