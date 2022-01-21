@@ -144,29 +144,5 @@ final class Uuid implements IUuid
 
         return bytesWithInterlopedVariant;
     }
-
-    public final class InvalidBytesCountException extends Exception
-    {
-        public InvalidBytesCountException(final byte[] bytes)
-        {
-            super(String.format("Expected 16 bytes, got %d", bytes.length));
-        }
-    }
-
-    public final class InvalidDigitsCountException extends Exception
-    {
-        public InvalidDigitsCountException(final String uuid, final int bytesCount)
-        {
-            super(String.format("Expected 32 hex digits, got %d (%s)", bytesCount, uuid.length()));
-        }
-    }
-
-    public final class InvalidVersionException extends Exception
-    {
-        public InvalidVersionException(final String uuid, final int expectedVersion)
-        {
-            super(String.format("The uuid %s doesn't match version %d", uuid, expectedVersion));
-        }
-    }
 }
 

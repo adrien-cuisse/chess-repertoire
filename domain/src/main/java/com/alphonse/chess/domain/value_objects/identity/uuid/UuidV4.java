@@ -2,9 +2,6 @@
 package com.alphonse.chess.domain.value_objects.identity.uuid;
 
 import com.alphonse.chess.domain.value_objects.IValueObject;
-import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidBytesCountException;
-import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidDigitsCountException;
-import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidVersionException;
 
 import java.util.Random;
 
