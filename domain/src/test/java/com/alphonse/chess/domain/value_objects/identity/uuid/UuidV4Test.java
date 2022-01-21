@@ -84,7 +84,7 @@ public final class UuidV4Test
         UuidV4 uuid = new UuidV4();
         IUuid otherInstance = new UuidV4();
         IUuid otherImplementation = new Uuid(nullBytes(), 0);
-        IUuid sameStringRepresentation = new UuidV4(uuid.toString(), uuid.version());
+        IUuid sameStringRepresentation = new UuidV4(uuid.toString());
 
         return new Object[][] {
             { uuid, otherImplementation, false },

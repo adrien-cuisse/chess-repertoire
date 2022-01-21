@@ -26,9 +26,9 @@ public final class UuidV4 implements IUuid
         }
     }
 
-    public UuidV4(final String rfcCompliantString, final int expectedVersion) throws InvalidDigitsCountException, InvalidVersionException
+    public UuidV4(final String rfcCompliantString) throws InvalidDigitsCountException, InvalidVersionException
     {
-        this.uuid = new Uuid(rfcCompliantString, expectedVersion);
+        this.uuid = new Uuid(rfcCompliantString, 4);
     }
 
     final public boolean equals(final IUuid other)
