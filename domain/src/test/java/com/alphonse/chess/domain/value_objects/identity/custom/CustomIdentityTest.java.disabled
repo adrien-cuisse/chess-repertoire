@@ -1,0 +1,117 @@
+
+package com.alphonse.chess.domain.value_objects.identity.custom;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+
+import com.tngtech.java.junit.dataprovider.DataProvider;
+import com.tngtech.java.junit.dataprovider.UseDataProvider;
+import com.tngtech.java.junit.dataprovider.DataProviderRunner;
+
+@RunWith(DataProviderRunner.class)
+public final class CustomIdentityTest
+{
+    @DataProvider
+    public final static Object[][] identities()
+    {
+        int setsToGenerate = 1000;
+
+        Object[][] identities = new Object[setsToGenerate][2];
+
+        for (int addedIdentity = 0; addedIdentity < setsToGenerate; addedIdentity++)
+        {
+            identities[addedIdentity][0] = new CustomIdentity();
+        }
+        // System.out.println("Before: " + identities[0][0].toString());
+
+        for (int addedIdentity = 0; addedIdentity < setsToGenerate; addedIdentity++)
+        {
+            identities[addedIdentity][1] = new CustomIdentity();
+        }
+        // System.out.println("After: " + identities[0][1].toString());
+
+        return identities;
+    }
+
+    @Test
+    @UseDataProvider(value = "identities")
+    public final void isLexicographicallySortableByCreationTime(final CustomIdentity before, final CustomIdentity after)
+    {
+        // given 2 identities, with the first one being generated before the second one
+
+        // when checking their string representation
+        String beforeString = before.toString();
+        String afterString = after.toString();
+
+        // System.out.println("Before: " + beforeString);
+        // System.out.println("After: " + afterString);
+
+        // then the first one should be lexicographically lesser than the second one
+        assertTrue(
+            "First generated identity should be lexicographically lesser than the later one",
+            beforeString.compareTo(afterString) < 0
+        );
+    }
+
+    @DataProvider
+    public final static Object[][] identityWithAlphabet()
+    {
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        String alphabetName = "RFC-4648";
+
+        return new Object[][] {
+            { new CustomIdentity(), alphabet, alphabetName },
+        };
+    }
+
+    @Test
+    @UseDataProvider(value = "identityWithAlphabet")
+    public final void isBase32Encoded(final CustomIdentity identity, final String alphabet, final String alphabetName)
+    {
+        // given an identity and an expected alphabet
+
+        // when checking its string format
+        String format = identity.toString();
+
+        // then it should be made with only characters from the alphabet
+        assertTrue(
+            "The identity '" + format + "' doesn't comply to alphabet '" + alphabetName + "' + (" + alphabet + ")",
+            identity.toString().matches("[" + alphabet + "]+")
+        );
+    }
+
+//    @DataProvider
+//    public static final Object[][] rfcFormat()
+//    {
+//        return new Object[][] {
+//            {
+//                new CustomIdentity(0x00, 0x00, (byte) 0xe7, (byte) 0xc1, 0x22, 0x05, 0x19, (byte) 0xa4, (byte) 0xff, (byte) 0xac),
+//                "AAAOPQJCAUM2J75M"
+//            }
+//        };
+//    }
+//
+//    @Test
+//    @UseDataProvider(value = "...")
+//    public final void encodedStringCompliesToRfc4648(final CustomIdentity identity, final String expectedFormat)
+//    {
+//        // given an identity and its expected string-format
+//
+//        // when checking its string actual format
+//        String format = identity.toString();
+//
+//        // then it should match the expected one
+//    }
+
+}
+
+// encodes to base32 properly (check https://cryptii.com/pipes/hex-to-base32)
+// 00 00 ce 8f d8 80 83 50 bf -> AAAM5D6YQCBVBPY=
+// 00 00 ce 8f d8 ae cd 20 cb -> AAAM5D6YV3GSBSY=
+// /!\ requires creating from bytes

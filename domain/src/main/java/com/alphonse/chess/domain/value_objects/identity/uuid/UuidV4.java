@@ -4,6 +4,7 @@ package com.alphonse.chess.domain.value_objects.identity.uuid;
 import com.alphonse.chess.domain.value_objects.IValueObject;
 import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidBytesCountException;
 import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidDigitsCountException;
+import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidVersionException;
 
 import java.util.Random;
 
@@ -25,9 +26,9 @@ public final class UuidV4 implements IUuid
         }
     }
 
-    public UuidV4(final String rfcCompliantString) throws InvalidDigitsCountException
+    public UuidV4(final String rfcCompliantString, final int expectedVersion) throws InvalidDigitsCountException, InvalidVersionException
     {
-        this.uuid = new Uuid(rfcCompliantString);
+        this.uuid = new Uuid(rfcCompliantString, expectedVersion);
     }
 
     final public boolean equals(final IUuid other)
@@ -66,4 +67,6 @@ public final class UuidV4 implements IUuid
         generator.nextBytes(randomBytes);
         return randomBytes;
     }
+
+    // TODO: check version digit
 }

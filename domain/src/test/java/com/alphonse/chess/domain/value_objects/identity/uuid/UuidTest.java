@@ -4,7 +4,9 @@ package com.alphonse.chess.domain.value_objects.identity.uuid;
 import com.alphonse.chess.domain.value_objects.identity.uuid.IUuid.Variant;
 import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidBytesCountException;
 import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidDigitsCountException;
+import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidVersionException;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -19,6 +21,20 @@ import com.tngtech.java.junit.dataprovider.UseDataProvider;
 @RunWith(DataProviderRunner.class)
 public final class UuidTest
 {
+    public final static byte[] nullBytes()
+    {
+        byte[] bytes = new byte[16];
+        Arrays.fill(bytes, (byte) 0);
+        return bytes;
+    }
+
+    public final static byte[] nullBytesAndVersion(final int version)
+    {
+        byte[] bytes = new byte[16];
+        bytes[6] = (byte) (((version & 0b0000_1111) << 4) | (bytes[6] & 0b0000_1111));
+        return bytes;
+    }
+
     @Test(expected = InvalidBytesCountException.class)
     public final void expected16Bytes() throws InvalidBytesCountException
     {
@@ -32,22 +48,35 @@ public final class UuidTest
     }
 
     @Test(expected = InvalidDigitsCountException.class)
-    public final void expected32HexDigits() throws InvalidDigitsCountException
+    public final void expects32HexDigits() throws InvalidDigitsCountException, InvalidVersionException
     {
         // given an invalid string representation
         String format = "42";
 
         // when trying to create an uuid from it
-        new Uuid(format);
+        new Uuid(format, 0);
+
+        // then an exception should be thrown
+    }
+
+    @Test(expected = InvalidVersionException.class)
+    public final void expectsStringMatchingVersion() throws InvalidDigitsCountException, InvalidVersionException
+    {
+        // given a string representation that mismatches the expected version
+        String format = "00000000-0000-f000-0000-000000000000";
+        int wrongVersion = 0xe;
+
+        // when trying to build an uuid from it
+        new Uuid(format, wrongVersion);
 
         // then an exception should be thrown
     }
 
     @Test
-    public final void isRfcCompliant()
+    public final void isRfcCompliant() throws InvalidBytesCountException
     {
         // given a valid Uuid
-        IUuid uuid = new DummyUuid();
+        IUuid uuid = new Uuid(nullBytes());
 
         // when checking its string format
         String format = uuid.toNative();
@@ -71,10 +100,10 @@ public final class UuidTest
 
     @Test
     @UseDataProvider(value = "version")
-    public final void hasSpecifiedVersion(final int expectedVersion)
+    public final void hasSpecifiedVersion(final int expectedVersion) throws InvalidBytesCountException
     {
         // given an uuid from specified bytes, and a version
-        IUuid uuid = new DummyUuid(DummyUuid.nullBytes(), expectedVersion);
+        IUuid uuid = new Uuid(nullBytesAndVersion(expectedVersion), expectedVersion);
 
         // when checking the actual version of the uuid
         int actualVersion = uuid.version();
@@ -89,10 +118,10 @@ public final class UuidTest
 
     @Test
     @UseDataProvider(value = "version")
-    public final void versionIsThe13thDigit(final int expectedVersion)
+    public final void versionIsThe13thDigit(final int expectedVersion) throws InvalidBytesCountException
     {
         // given an uuid from specified bytes, and a version
-        IUuid uuid = new DummyUuid(DummyUuid.nullBytes(), expectedVersion);
+        IUuid uuid = new Uuid(nullBytesAndVersion(expectedVersion), expectedVersion);
 
         // when checking the string representation of the uuid
         String format = uuid.toString();
@@ -118,11 +147,10 @@ public final class UuidTest
 
     @Test
     @UseDataProvider(value = "variant")
-    public final void hasSpecifiedVariant(final Variant expectedVariant, final List<Character> __)
+    public final void hasSpecifiedVariant(final Variant expectedVariant, final List<Character> __) throws InvalidBytesCountException
     {
         // given an uuid given specified bytes, and a variant
-        byte[] bytes = DummyUuid.nullBytes();
-        DummyUuid uuid = new DummyUuid(bytes, 0, expectedVariant);
+        Uuid uuid = new Uuid(nullBytes(), 0, expectedVariant);
 
         // when checking the actual variant of the uuid
         Variant actualVariant = uuid.variant();
@@ -137,11 +165,10 @@ public final class UuidTest
 
     @Test
     @UseDataProvider(value = "variant")
-    public final void variantIsThe17thDigit(final Variant expectedVariant, final List<Character> possibleVariantDigits)
+    public final void variantIsThe17thDigit(final Variant expectedVariant, final List<Character> possibleVariantDigits) throws InvalidBytesCountException
     {
         // given an uuid given specified bytes, and a variant
-        byte[] bytes = DummyUuid.nullBytes();
-        DummyUuid uuid = new DummyUuid(bytes, 0, expectedVariant);
+        Uuid uuid = new Uuid(nullBytes(), 0, expectedVariant);
 
         // when checking the variant digit in the string representation of the uuid
         Character actualVariantDigit = uuid.toString().charAt(19);
@@ -166,10 +193,10 @@ public final class UuidTest
 
     @Test
     @UseDataProvider(value = "string")
-    public final void buildsFromString(final String expectedFormat, final int __, final Variant ___)
+    public final void buildsFromString(final String expectedFormat, final int expectedVersion, final Variant __) throws InvalidDigitsCountException, InvalidVersionException
     {
         // given an uuid made from a string
-        IUuid uuid = new DummyUuid(expectedFormat);
+        IUuid uuid = new Uuid(expectedFormat, expectedVersion);
 
         // when checking its string representation
         String actualFormat = uuid.toString();
@@ -184,10 +211,10 @@ public final class UuidTest
 
     @Test
     @UseDataProvider(value = "string")
-    public final void parsesVersionFromString(final String expectedFormat, final int expectedVersion, final Variant __)
+    public final void parsesVersionFromString(final String expectedFormat, final int expectedVersion, final Variant __) throws InvalidDigitsCountException, InvalidVersionException
     {
         // given an uuid made from a string
-        IUuid uuid = new DummyUuid(expectedFormat);
+        IUuid uuid = new Uuid(expectedFormat, expectedVersion);
 
         // when checking its version
         int actualVersion = uuid.version();
@@ -202,10 +229,10 @@ public final class UuidTest
 
     @Test
     @UseDataProvider(value = "string")
-    public final void parsesVariantFromString(final String expectedFormat, final int __, final Variant expectedVariant)
+    public final void parsesVariantFromString(final String expectedFormat, final int expectedVersion, final Variant expectedVariant) throws InvalidDigitsCountException, InvalidVersionException
     {
         // given an uuid made from a string
-        IUuid uuid = new DummyUuid(expectedFormat);
+        IUuid uuid = new Uuid(expectedFormat, expectedVersion);
 
         // when checking its variant
         Variant actualVariant = uuid.variant();

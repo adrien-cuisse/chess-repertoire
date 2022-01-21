@@ -1,0 +1,193 @@
+
+package com.alphonse.chess.domain.value_objects.identity.custom;
+
+import java.security.SecureRandom;
+
+import com.alphonse.chess.domain.value_objects.IValueObject;
+import com.alphonse.chess.domain.value_objects.identity.IIdentity;
+
+// TODO: getBytes()
+// TODO: CustomIdentity(byte[])
+// TODO: CustomIdentity(String)
+
+public final class CustomIdentity implements IIdentity<String>
+{
+    private final long timestamp;
+
+    private final short slug;
+
+    private final static SecureRandom random = new SecureRandom();
+
+    /**
+     * As defined by RFC-4648
+     *
+     * @see https://datatracker.ietf.org/doc/html/rfc4648
+     */
+    private final static String BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+    public CustomIdentity()
+    {
+        // delay 1ns to ensure timestamp unicity
+        try
+        {
+            Thread.sleep(0, 10);
+        }
+        catch (InterruptedException exception)
+        {
+            Thread.currentThread().interrupt();
+        }
+
+        this.timestamp = System.nanoTime();
+
+        byte[] slugBytes = new byte[2];
+        random.nextBytes(slugBytes);
+        this.slug = (short) ((slugBytes[0] << 8) | (slugBytes[1] << 0));
+
+        //System.out.println(String.format(
+        //    "Timestamp and slug bytes: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+        //    ((this.timestamp & 0xff00000000000000L) >> 56),
+        //    ((this.timestamp & 0x00ff000000000000L) >> 48),
+        //    ((this.timestamp & 0x0000ff0000000000L) >> 40),
+        //    ((this.timestamp & 0x000000ff00000000L) >> 32),
+        //    ((this.timestamp & 0x00000000ff000000L) >> 24),
+        //    ((this.timestamp & 0x0000000000ff0000L) >> 16),
+        //    ((this.timestamp & 0x000000000000ff00L) >>  8),
+        //    ((this.timestamp & 0x00000000000000ffL) >>  0),
+        //    ((this.slug & 0xff00) >> 8),
+        //    ((this.slug & 0x00ff) >> 0)
+        //));
+    }
+
+//    public CustomIdentity(long timestamp, short slug)
+//    {
+//
+//    }
+//
+
+//    public CustomIdentity(byte timestamp7, byte timestamp6, byte timestamp5, byte timestamp4, byte timestamp3, byte timestamp2, byte timestamp1, byte timestamp0, byte slug1, byte slug0)
+//    {
+//
+//    }
+//
+//    public CustomIdentity(String encodedString)
+//    {
+//
+//    }
+
+    public final boolean equals(CustomIdentity other)
+    {
+        return this.toNative().equals(other.toNative());
+    }
+
+    public final boolean equals(IValueObject other)
+    {
+        if (other.getClass().getName().equals(this.getClass().getName()))
+        {
+            return this.equals((CustomIdentity)other);
+        }
+
+        return false;
+    }
+
+    public final String toNative()
+    {
+        return this.encode5BytesTo8Characters(
+            (byte) ((this.timestamp & 0xff00000000000000L) >> 56),
+            (byte) ((this.timestamp & 0x00ff000000000000L) >> 48),
+            (byte) ((this.timestamp & 0x0000ff0000000000L) >> 40),
+            (byte) ((this.timestamp & 0x000000ff00000000L) >> 32),
+            (byte) ((this.timestamp & 0x00000000ff000000L) >> 24)
+        ) + this.encode5BytesTo8Characters(
+            (byte) ((this.timestamp & 0x0000000000ff0000L) >> 16),
+            (byte) ((this.timestamp & 0x000000000000ff00L) >>  8),
+            (byte) ((this.timestamp & 0x00000000000000ffL) >>  0),
+            (byte) ((this.slug & 0xff00) >> 8),
+            (byte) ((this.slug & 0x00ff) >> 0)
+        );
+    }
+
+    public final String toString()
+    {
+        return this.toNative();
+    }
+
+//    private final String encodeTimestamp()
+//    {
+//        String encodedTimestamp = "";
+//
+//        long[][] timestampBitsMaskAndShift = new long[][] {
+//            { 0xf800000000000000L, 59 },
+//            { 0x07C0000000000000L, 54 },
+//            { 0x003E000000000000L, 49 },
+//            { 0x0001F00000000000L, 44 },
+//            { 0x00000F8000000000L, 39 },
+//            { 0x0000007C00000000L, 34 },
+//            { 0x00000003E0000000L, 29 },
+//            { 0x000000001F000000L, 24 },
+//            { 0x0000000000F80000L, 19 },
+//            { 0x000000000007C000L, 14 },
+//            { 0x0000000000003E00L,  9 },
+//            { 0x00000000000001F0L,  4 },
+//            { 0x000000000000001FL,  0 },
+//        };
+//
+//        for (long[] mask : timestampBitsMaskAndShift)
+//        {
+//            long bitMask = mask[0];
+//            long rightShiftSize = mask[1];
+//            long maskedValue = this.timestamp & bitMask;
+//            int characterIndex = (int) (maskedValue >> rightShiftSize);
+//            encodedTimestamp += BASE32_ALPHABET.charAt(characterIndex);
+//        }
+//
+//        return encodedTimestamp;
+//    }
+
+//    private final String encodeSlug()
+//    {
+//        String encodedSlug = "";
+//
+//        int[][] slugBitsMaskAndShift = new int[][] {
+//            { 0xff0000, 16 },
+//            { 0x00ff00, 8 },
+//            { 0x0000ff, 0 },
+//        };
+//
+//        for (int[] mask : slugBitsMaskAndShift)
+//        {
+//            int bitMask = mask[0];
+//            int rightShiftSize = mask[1];
+//            int maskedValue = this.slug & bitMask;
+//            int characterIndex = (int) (maskedValue >> rightShiftSize);
+//            encodedSlug += BASE32_ALPHABET.charAt(characterIndex);
+//        }
+//
+//        return encodedSlug;
+//    }
+
+    /**
+     * Encodes 5 bytes to 8 characters
+     */
+    private final String encode5BytesTo8Characters(final byte byte0, final byte byte1, final byte byte2, final byte byte3, final byte byte4)
+    {
+        int character1Index = (byte) ((byte0 & 0b1111_1000) >> 3);                                  // ~~~~~yyy xxxxyyyy xxxxyyyy xxxxyyyy xxxxyyyy
+        int character2Index = (byte) (((byte0 & 0b0000_0111) << 2) | ((byte1 & 0b1100_0000) >> 6)); // xxxxy~~~ ~~xxyyyy xxxxyyyy xxxxyyyy xxxxyyyy
+        int character3Index = (byte) ((byte1 & 0b0011_1110) >> 1);                                  // xxxxyyyy xx~~~~~y xxxxyyyy xxxxyyyy xxxxyyyy
+        int character4Index = (byte) (((byte1 & 0b0000_0001) << 4) | ((byte2 & 0b1111_0000) >> 4)); // xxxxyyyy xxxxyyy~ ~~~~yyyy xxxxyyyy xxxxyyyy
+        int character5Index = (byte) (((byte2 & 0b0000_1111) << 1) | ((byte3 & 0b1000_0000) >> 7)); // xxxxyyyy xxxxyyyy xxxx~~~~ ~xxxyyyy xxxxyyyy
+        int character6Index = (byte) ((byte3 & 0b0111_1100) >> 2);                                  // xxxxyyyy xxxxyyyy xxxxyyyy x~~~~~yy xxxxyyyy
+        int character7Index = (byte) (((byte3 & 0b0000_0011) << 3) | ((byte4 & 0b1110_0000) >> 5)); // xxxxyyyy xxxxyyyy xxxxyyyy xxxxyy~~ ~~~xyyyy
+        int character8Index = (byte) ((byte4 & 0b0001_1111) << 0);                                  // xxxxyyyy xxxxyyyy xxxxyyyy xxxxyyyy xxx~~~~~
+
+        return String.format("%c%c%c%c%c%c%c%c",
+            BASE32_ALPHABET.charAt(character1Index),
+            BASE32_ALPHABET.charAt(character2Index),
+            BASE32_ALPHABET.charAt(character3Index),
+            BASE32_ALPHABET.charAt(character4Index),
+            BASE32_ALPHABET.charAt(character5Index),
+            BASE32_ALPHABET.charAt(character6Index),
+            BASE32_ALPHABET.charAt(character7Index),
+            BASE32_ALPHABET.charAt(character8Index)
+        );
+    }
+}

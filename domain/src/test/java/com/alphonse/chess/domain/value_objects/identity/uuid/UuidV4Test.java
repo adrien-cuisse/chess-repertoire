@@ -2,12 +2,16 @@
 package com.alphonse.chess.domain.value_objects.identity.uuid;
 
 import com.alphonse.chess.domain.value_objects.identity.uuid.IUuid.Variant;
+import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidBytesCountException;
 import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidDigitsCountException;
+import com.alphonse.chess.domain.value_objects.identity.uuid.Uuid.InvalidVersionException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+
+import java.util.Arrays;
 
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
@@ -16,6 +20,13 @@ import com.tngtech.java.junit.dataprovider.UseDataProvider;
 @RunWith(DataProviderRunner.class)
 public final class UuidV4Test
 {
+    public final static byte[] nullBytes()
+    {
+        byte[] bytes = new byte[16];
+        Arrays.fill(bytes, (byte) 0);
+        return bytes;
+    }
+
     @Test
     public final void is32HexDigitsLong()
     {
@@ -68,21 +79,12 @@ public final class UuidV4Test
     }
 
     @DataProvider
-    public final static Object[][] equality()
+    public final static Object[][] equality() throws InvalidBytesCountException, InvalidDigitsCountException, InvalidVersionException
     {
         UuidV4 uuid = new UuidV4();
         IUuid otherInstance = new UuidV4();
-        IUuid otherImplementation = new DummyUuid();
-        IUuid sameStringRepresentation = null;
-
-        try
-        {
-            sameStringRepresentation = new UuidV4(uuid.toString());
-        }
-        catch (InvalidDigitsCountException exception)
-        {
-            // won't happen if uuid is 32 hex-digits long, concerned test will tell
-        }
+        IUuid otherImplementation = new Uuid(nullBytes(), 0);
+        IUuid sameStringRepresentation = new UuidV4(uuid.toString(), uuid.version());
 
         return new Object[][] {
             { uuid, otherImplementation, false },
