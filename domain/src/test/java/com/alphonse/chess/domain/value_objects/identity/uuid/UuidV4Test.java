@@ -22,7 +22,7 @@ public final class UuidV4Test
 {
     public final static byte[] nullBytes()
     {
-        byte[] bytes = new byte[16];
+        final byte[] bytes = new byte[16];
         Arrays.fill(bytes, (byte) 0);
         return bytes;
     }
@@ -31,10 +31,10 @@ public final class UuidV4Test
     public final void is32HexDigitsLong()
     {
         // given an uuid
-        UuidV4 uuid = new UuidV4();
+        final UuidV4 uuid = new UuidV4();
 
         // when checking how many digits are composing its string representation
-        int digitsCount = uuid.toString().replace("-", "").length();
+        final int digitsCount = uuid.toString().replace("-", "").length();
 
         // then there should be 32
         assertEquals(
@@ -48,10 +48,10 @@ public final class UuidV4Test
     public final void isVersion4()
     {
         // given a new uuid
-        UuidV4 uuid = new UuidV4();
+        final UuidV4 uuid = new UuidV4();
 
         // when checking its version
-        int version = uuid.version();
+        final int version = uuid.version();
 
         // then it should be 4
         assertEquals(
@@ -65,10 +65,10 @@ public final class UuidV4Test
     public final void isRfcVariant()
     {
         // given a new uuid
-        UuidV4 uuid = new UuidV4();
+        final UuidV4 uuid = new UuidV4();
 
         // when checking its variant
-        Variant variant = uuid.variant();
+        final Variant variant = uuid.variant();
 
         // then it should be RFC
         assertEquals(
@@ -81,10 +81,10 @@ public final class UuidV4Test
     @DataProvider
     public final static Object[][] equality() throws InvalidBytesCountException, InvalidDigitsCountException, InvalidVersionException
     {
-        UuidV4 uuid = new UuidV4();
-        IUuid otherInstance = new UuidV4();
-        IUuid otherImplementation = new Uuid(nullBytes(), 0);
-        IUuid sameStringRepresentation = new UuidV4(uuid.toString());
+        final UuidV4 uuid = new UuidV4();
+        final IUuid otherInstance = new UuidV4();
+        final IUuid otherImplementation = new Uuid(nullBytes(), 0);
+        final IUuid sameStringRepresentation = new UuidV4(uuid.toString());
 
         return new Object[][] {
             { uuid, otherImplementation, false },
@@ -101,7 +101,7 @@ public final class UuidV4Test
         // given 2 uuids
 
         // when comparing them
-        boolean actualEquality = uuid.equals(other);
+        final boolean actualEquality = uuid.equals(other);
 
         // then it should match
         assertEquals(
@@ -115,11 +115,11 @@ public final class UuidV4Test
     public final void isUnique()
     {
         // given 2 uuids built the same way
-        UuidV4 first = new UuidV4();
-        UuidV4 second = new UuidV4();
+        final UuidV4 first = new UuidV4();
+        final UuidV4 second = new UuidV4();
 
         // when comparing them
-        boolean instancesAreTheSame = first.equals(second);
+        final boolean instancesAreTheSame = first.equals(second);
 
         // then they should be different
         assertFalse(

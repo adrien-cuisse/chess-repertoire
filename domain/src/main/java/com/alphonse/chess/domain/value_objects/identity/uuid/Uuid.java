@@ -32,7 +32,7 @@ final class Uuid implements IUuid
 
     protected Uuid(final String rfcCompliantUuid, final int expectedVersion) throws InvalidDigitsCountException, InvalidVersionException
     {
-        char[] digits = rfcCompliantUuid.replace("-", "").toCharArray();
+        final char[] digits = rfcCompliantUuid.replace("-", "").toCharArray();
 
         if (digits.length != 32)
         {
@@ -70,7 +70,7 @@ final class Uuid implements IUuid
 
     public final Variant variant()
     {
-        byte variantBits = (byte) ((this.bytes[8] & 0b1110_0000) >> 5);
+        final byte variantBits = (byte) ((this.bytes[8] & 0b1110_0000) >> 5);
 
         switch (variantBits)
         {
@@ -96,7 +96,7 @@ final class Uuid implements IUuid
         String format = "";
 
         int bytesCount = 0;
-        List<Integer> dashesPosition = Arrays.asList(new Integer[] { 4, 6, 8, 10 });
+        final List<Integer> dashesPosition = Arrays.asList(new Integer[] { 4, 6, 8, 10 });
 
         for (byte currentByte : this.bytes)
         {
@@ -117,14 +117,14 @@ final class Uuid implements IUuid
 
     private final static byte[] interlopVersionInTimestampHigh(final byte[] bytes, final int version)
     {
-        byte[] bytesWithInterlopedVersion = bytes.clone();
+        final byte[] bytesWithInterlopedVersion = bytes.clone();
         bytesWithInterlopedVersion[6] = (byte) ((version << 4) | (bytes[6] & 0b0000_1111));
         return bytesWithInterlopedVersion;
     }
 
     private final static byte[] interlopVariantInClockSequenceHigh(final byte[] bytes, final Variant variant)
     {
-        byte[] bytesWithInterlopedVariant = bytes.clone();
+        final byte[] bytesWithInterlopedVariant = bytes.clone();
 
         switch (variant)
         {
