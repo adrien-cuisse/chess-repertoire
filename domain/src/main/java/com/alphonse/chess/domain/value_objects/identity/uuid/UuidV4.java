@@ -7,7 +7,7 @@ import java.util.Random;
 
 public final class UuidV4 implements IUuid
 {
-    private final static Random generator = new Random();
+    private static final Random generator = new Random();
 
     private Uuid uuid;
 
@@ -28,37 +28,37 @@ public final class UuidV4 implements IUuid
         this.uuid = new Uuid(rfcCompliantString, 4);
     }
 
-    final public boolean equals(final IUuid other)
+    public final boolean equals(final IUuid other)
     {
         return this.uuid.equals(other);
     }
 
-    final public boolean equals(final IValueObject other)
+    public final boolean equals(final IValueObject other)
     {
         return this.uuid.equals(other);
     }
 
-    final public int version()
+    public final int version()
     {
         return 4;
     }
 
-    final public Variant variant()
+    public final Variant variant()
     {
         return this.uuid.variant();
     }
 
-    final public String toNative()
+    public final String toNative()
     {
         return this.uuid.toNative();
     }
 
-    final public String toString()
+    public final String toString()
     {
         return this.uuid.toString();
     }
 
-    private final static byte[] randomBytes()
+    private static final byte[] randomBytes()
     {
         final byte[] randomBytes = new byte[16];
         generator.nextBytes(randomBytes);
