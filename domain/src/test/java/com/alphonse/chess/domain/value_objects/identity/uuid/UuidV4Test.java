@@ -4,17 +4,14 @@ package com.alphonse.chess.domain.value_objects.identity.uuid;
 import com.alphonse.chess.domain.value_objects.identity.uuid.IUuid.Variant;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.util.Arrays;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-
-@RunWith(DataProviderRunner.class)
+// @RunWith(DataProviderRunner.class)
 public final class UuidV4Test
 {
     public final static byte[] nullBytes()
@@ -75,7 +72,6 @@ public final class UuidV4Test
         );
     }
 
-    @DataProvider
     public final static Object[][] equality() throws InvalidBytesCountException, InvalidDigitsCountException, InvalidVersionException
     {
         final UuidV4 uuid = new UuidV4();
@@ -91,8 +87,8 @@ public final class UuidV4Test
         };
     }
 
-    @Test
-    @UseDataProvider(value = "equality")
+    @ParameterizedTest
+    @MethodSource("equality")
     public final void matchesOnlyExactString(final UuidV4 uuid, final IUuid other, final boolean expectedEquality)
     {
         // given 2 uuids

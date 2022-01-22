@@ -7,15 +7,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-
-@RunWith(DataProviderRunner.class)
 public final class UuidTest
 {
     public final static byte[] nullBytes()
@@ -33,7 +29,7 @@ public final class UuidTest
     }
 
     @Test(expected = InvalidBytesCountException.class)
-    public final void expected16Bytes() throws InvalidBytesCountException
+    public final void expects16Bytes() throws InvalidBytesCountException
     {
         // given an invalid bytes count
         final byte[] bytes = new byte[] { 0x42 };
@@ -86,7 +82,6 @@ public final class UuidTest
         );
     }
 
-    @DataProvider
     public final static Object[][] version()
     {
         return new Object[][] {
@@ -95,8 +90,8 @@ public final class UuidTest
         };
     }
 
-    @Test
-    @UseDataProvider(value = "version")
+    @ParameterizedTest
+    @MethodSource("version")
     public final void hasSpecifiedVersion(final int expectedVersion) throws InvalidBytesCountException
     {
         // given an uuid from specified bytes, and a version
@@ -113,8 +108,8 @@ public final class UuidTest
         );
     }
 
-    @Test
-    @UseDataProvider(value = "version")
+    @ParameterizedTest
+    @MethodSource("version")
     public final void versionIsThe13thDigit(final int expectedVersion) throws InvalidBytesCountException
     {
         // given an uuid from specified bytes, and a version
@@ -131,7 +126,6 @@ public final class UuidTest
         );
     }
 
-    @DataProvider
     public final static Object[][] variant()
     {
         return new Object[][] {
@@ -142,8 +136,8 @@ public final class UuidTest
         };
     }
 
-    @Test
-    @UseDataProvider(value = "variant")
+    @ParameterizedTest
+    @MethodSource("variant")
     public final void hasSpecifiedVariant(final Variant expectedVariant, final List<Character> __) throws InvalidBytesCountException
     {
         // given an uuid given specified bytes, and a variant
@@ -160,8 +154,8 @@ public final class UuidTest
         );
     }
 
-    @Test
-    @UseDataProvider(value = "variant")
+    @ParameterizedTest
+    @MethodSource("variant")
     public final void variantIsThe17thDigit(final Variant expectedVariant, final List<Character> possibleVariantDigits) throws InvalidBytesCountException
     {
         // given an uuid given specified bytes, and a variant
@@ -177,7 +171,6 @@ public final class UuidTest
         );
     }
 
-    @DataProvider
     public final static Object[][] string()
     {
         return new Object[][] {
@@ -188,8 +181,8 @@ public final class UuidTest
         };
     }
 
-    @Test
-    @UseDataProvider(value = "string")
+    @ParameterizedTest
+    @MethodSource("string")
     public final void buildsFromString(final String expectedFormat, final int expectedVersion, final Variant __) throws InvalidDigitsCountException, InvalidVersionException
     {
         // given an uuid made from a string
@@ -206,8 +199,8 @@ public final class UuidTest
         );
     }
 
-    @Test
-    @UseDataProvider(value = "string")
+    @ParameterizedTest
+    @MethodSource("string")
     public final void parsesVersionFromString(final String expectedFormat, final int expectedVersion, final Variant __) throws InvalidDigitsCountException, InvalidVersionException
     {
         // given an uuid made from a string
@@ -224,8 +217,8 @@ public final class UuidTest
         );
     }
 
-    @Test
-    @UseDataProvider(value = "string")
+    @ParameterizedTest
+    @MethodSource("string")
     public final void parsesVariantFromString(final String expectedFormat, final int expectedVersion, final Variant expectedVariant) throws InvalidDigitsCountException, InvalidVersionException
     {
         // given an uuid made from a string
