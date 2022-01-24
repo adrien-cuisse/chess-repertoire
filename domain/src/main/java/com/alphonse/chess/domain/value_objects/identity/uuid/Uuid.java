@@ -10,46 +10,54 @@ final class Uuid implements IUuid
 {
     protected final byte[] bytes;
 
-    protected Uuid(final byte[] bytes) throws InvalidBytesCountException
+    /**
+     * @throws InvalidUuidException - if bytes count isn't 16
+     */
+    protected Uuid(final byte[] bytes) throws InvalidUuidException
     {
         if (bytes.length != 16)
-        {
-            throw new InvalidBytesCountException(bytes);
-        }
+            throw new InvalidUuidException(bytes);
 
         this.bytes = bytes;
     }
 
-    protected Uuid(final byte[] bytes, final int version) throws InvalidBytesCountException
+    /**
+     * @throws InvalidUuidException - if bytes count isn't 16
+     */
+    protected Uuid(final byte[] bytes, final int version) throws InvalidUuidException
     {
         this(interlopVersionInTimestampHigh(bytes, version));
     }
 
-    protected Uuid(final byte[] bytes, final int version, final Variant variant) throws InvalidBytesCountException
+    /**
+     * @throws InvalidUuidException - if bytes count isn't 16
+     */
+    protected Uuid(final byte[] bytes, final int version, final Variant variant) throws InvalidUuidException
     {
         this(interlopVariantInClockSequenceHigh(bytes, variant), version);
     }
 
-    protected Uuid(final String rfcCompliantUuid, final int expectedVersion) throws InvalidDigitsCountException, InvalidVersionException
+    /**
+     * @throws InvalidUuidException - if uuid isn't RFC compliant, or if version mismatches with string
+     */
+    protected Uuid(final String uuid, final int expectedVersion) throws InvalidUuidException
     {
-        final char[] digits = rfcCompliantUuid.replace("-", "").toCharArray();
+        if (uuid.matches("[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}") == false)
+            throw new InvalidUuidException(uuid);
 
-        if (digits.length != 32)
-        {
-            throw new InvalidDigitsCountException(rfcCompliantUuid, digits.length);
-        }
-        if (digits[12] != Character.forDigit(expectedVersion, 10))
-        {
-            throw new InvalidVersionException(rfcCompliantUuid, expectedVersion);
-        }
+        final String digits = uuid.replace("-", "");
 
-        this.bytes = new byte[digits.length / 2];
+        final String versionDigit = digits.substring(12, 13);
+        final int actualVersion = Integer.parseInt(versionDigit, 16);
+        if (actualVersion != expectedVersion)
+            throw new InvalidUuidException(uuid, expectedVersion, actualVersion);
 
-        for (int processedDigits = 0; processedDigits < digits.length; processedDigits += 2)
+        this.bytes = new byte[digits.length() / 2];
+
+        for (int processedDigits = 0; processedDigits < digits.length(); processedDigits += 2)
         {
-            byte highNibble = (byte) ((Character.digit(digits[processedDigits], 16) << 4));
-            byte lowNibble = (byte) (Character.digit(digits[processedDigits + 1], 16));
-            this.bytes[processedDigits / 2] = (byte) (highNibble | lowNibble);
+            String hexOctet = digits.substring(processedDigits, processedDigits + 2);
+            this.bytes[processedDigits / 2] = (byte) Integer.parseInt(hexOctet, 16);
         }
     }
 
@@ -70,20 +78,7 @@ final class Uuid implements IUuid
 
     public final Variant variant()
     {
-        final byte variantBits = (byte) ((this.bytes[8] & 0b1110_0000) >> 5);
-
-        switch (variantBits)
-        {
-            case 0b100:
-            case 0b101:
-                return Variant.RFC_VARIANT;
-            case 0b110:
-                return Variant.MICROSOFT_VARIANT;
-            case 0b111:
-                return Variant.FUTURE_VARIANT;
-            default:
-                return Variant.APOLLO_NCS_VARIANT;
-        }
+        return Variant.matchFromByte(this.bytes[8]);
     }
 
     public final String toNative()
@@ -93,55 +88,38 @@ final class Uuid implements IUuid
 
     public final String toString()
     {
-        String format = "";
+        final StringBuilder builder = new StringBuilder("");
+        final List<Integer> dashesPosition = Arrays.asList(4, 6, 8, 10);
 
-        int bytesCount = 0;
-        final List<Integer> dashesPosition = Arrays.asList(new Integer[] { 4, 6, 8, 10 });
-
-        for (byte currentByte : this.bytes)
+        for (int bytesCount = 0; bytesCount < this.bytes.length; bytesCount++)
         {
-            format += String.format(
-                "%c%c",
-                Character.forDigit((currentByte & 0b1111_0000) >> 4, 16),
-                Character.forDigit(currentByte & 0b0000_1111, 16)
-            );
-            bytesCount++;
             if (dashesPosition.contains(bytesCount))
-            {
-                format += "-";
-            }
+                builder.append("-");
+
+            final String hexOctet = String.format("%02x", this.bytes[bytesCount]);
+            builder.append(hexOctet);
         }
 
-        return format;
+        return builder.toString();
     }
 
-    private final static byte[] interlopVersionInTimestampHigh(final byte[] bytes, final int version)
+    private static final byte[] interlopVersionInTimestampHigh(final byte[] bytes, final int version)
     {
+        final int lowNibbleBitMask = 0x0f;
+
+        final byte highNibble = (byte) ((version & lowNibbleBitMask) << 4);
+        final byte lowNibble = (byte) (bytes[6] & lowNibbleBitMask);
+
         final byte[] bytesWithInterlopedVersion = bytes.clone();
-        bytesWithInterlopedVersion[6] = (byte) ((version << 4) | (bytes[6] & 0b0000_1111));
+        bytesWithInterlopedVersion[6] = (byte) (highNibble | lowNibble);
+
         return bytesWithInterlopedVersion;
     }
 
-    private final static byte[] interlopVariantInClockSequenceHigh(final byte[] bytes, final Variant variant)
+    private static final byte[] interlopVariantInClockSequenceHigh(final byte[] bytes, final Variant variant)
     {
         final byte[] bytesWithInterlopedVariant = bytes.clone();
-
-        switch (variant)
-        {
-            case RFC_VARIANT:
-                bytesWithInterlopedVariant[8] = (byte) (0b1000_0000 | (bytesWithInterlopedVariant[8] & 0b0011_1111));
-                break;
-            case MICROSOFT_VARIANT:
-                bytesWithInterlopedVariant[8] = (byte) (0b1100_0000 | (bytesWithInterlopedVariant[8] & 0b0001_1111));
-                break;
-            case FUTURE_VARIANT:
-                bytesWithInterlopedVariant[8] = (byte) (0b1110_0000 | (bytesWithInterlopedVariant[8] & 0b0001_1111));
-                break;
-            case APOLLO_NCS_VARIANT:
-                bytesWithInterlopedVariant[8] = (byte) (bytesWithInterlopedVariant[8] & 0b0111_1111);
-                break;
-        }
-
+        bytesWithInterlopedVariant[8] = (byte) (variant.bits() | (bytes[8] & variant.unusedBitsMask()));
         return bytesWithInterlopedVariant;
     }
 }

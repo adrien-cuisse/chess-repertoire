@@ -1,15 +1,18 @@
 
 package com.alphonse.chess.domain.value_objects.identity.uuid;
 
+import com.alphonse.chess.domain.value_objects.identity.uuid.IUuid.InvalidUuidException;
 import com.alphonse.chess.domain.value_objects.identity.uuid.IUuid.Variant;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public final class UuidTest
@@ -28,8 +31,8 @@ public final class UuidTest
         return bytes;
     }
 
-    @Test(expected = InvalidBytesCountException.class)
-    public final void expects16Bytes() throws InvalidBytesCountException
+    @Test(expected = InvalidUuidException.class)
+    public final void expects16Bytes() throws InvalidUuidException
     {
         // given an invalid bytes count
         final byte[] bytes = new byte[] { 0x42 };
@@ -40,8 +43,8 @@ public final class UuidTest
         // then an exception should be thrown
     }
 
-    @Test(expected = InvalidDigitsCountException.class)
-    public final void expects32HexDigits() throws InvalidDigitsCountException, InvalidVersionException
+    @Test(expected = InvalidUuidException.class)
+    public final void expects32HexDigits() throws InvalidUuidException
     {
         // given an invalid string representation
         final String format = "42";
@@ -52,8 +55,8 @@ public final class UuidTest
         // then an exception should be thrown
     }
 
-    @Test(expected = InvalidVersionException.class)
-    public final void expectsStringMatchingVersion() throws InvalidDigitsCountException, InvalidVersionException
+    @Test(expected = InvalidUuidException.class)
+    public final void expectsStringMatchingVersion() throws InvalidUuidException
     {
         // given a string representation that mismatches the expected version
         final String format = "00000000-0000-f000-0000-000000000000";
@@ -66,7 +69,7 @@ public final class UuidTest
     }
 
     @Test
-    public final void isRfcCompliant() throws InvalidBytesCountException
+    public final void isRfcCompliant() throws InvalidUuidException
     {
         // given a valid Uuid
         final IUuid uuid = new Uuid(nullBytes());
@@ -92,7 +95,7 @@ public final class UuidTest
 
     @ParameterizedTest
     @MethodSource("version")
-    public final void hasSpecifiedVersion(final int expectedVersion) throws InvalidBytesCountException
+    public final void hasSpecifiedVersion(final int expectedVersion) throws InvalidUuidException
     {
         // given an uuid from specified bytes, and a version
         final IUuid uuid = new Uuid(nullBytesAndVersion(expectedVersion), expectedVersion);
@@ -110,7 +113,7 @@ public final class UuidTest
 
     @ParameterizedTest
     @MethodSource("version")
-    public final void versionIsThe13thDigit(final int expectedVersion) throws InvalidBytesCountException
+    public final void versionIsThe13thDigit(final int expectedVersion) throws InvalidUuidException
     {
         // given an uuid from specified bytes, and a version
         final IUuid uuid = new Uuid(nullBytesAndVersion(expectedVersion), expectedVersion);
@@ -138,7 +141,7 @@ public final class UuidTest
 
     @ParameterizedTest
     @MethodSource("variant")
-    public final void hasSpecifiedVariant(final Variant expectedVariant, final List<Character> __) throws InvalidBytesCountException
+    public final void hasSpecifiedVariant(final Variant expectedVariant, final List<Character> __) throws InvalidUuidException
     {
         // given an uuid given specified bytes, and a variant
         final Uuid uuid = new Uuid(nullBytes(), 0, expectedVariant);
@@ -156,7 +159,7 @@ public final class UuidTest
 
     @ParameterizedTest
     @MethodSource("variant")
-    public final void variantIsThe17thDigit(final Variant expectedVariant, final List<Character> possibleVariantDigits) throws InvalidBytesCountException
+    public final void variantIsThe17thDigit(final Variant expectedVariant, final List<Character> possibleVariantDigits) throws InvalidUuidException
     {
         // given an uuid given specified bytes, and a variant
         final Uuid uuid = new Uuid(nullBytes(), 0, expectedVariant);
@@ -183,7 +186,7 @@ public final class UuidTest
 
     @ParameterizedTest
     @MethodSource("string")
-    public final void buildsFromString(final String expectedFormat, final int expectedVersion, final Variant __) throws InvalidDigitsCountException, InvalidVersionException
+    public final void buildsFromString(final String expectedFormat, final int expectedVersion, final Variant __) throws InvalidUuidException
     {
         // given an uuid made from a string
         final IUuid uuid = new Uuid(expectedFormat, expectedVersion);
@@ -201,7 +204,7 @@ public final class UuidTest
 
     @ParameterizedTest
     @MethodSource("string")
-    public final void parsesVersionFromString(final String expectedFormat, final int expectedVersion, final Variant __) throws InvalidDigitsCountException, InvalidVersionException
+    public final void parsesVersionFromString(final String expectedFormat, final int expectedVersion, final Variant __) throws InvalidUuidException
     {
         // given an uuid made from a string
         final IUuid uuid = new Uuid(expectedFormat, expectedVersion);
@@ -219,7 +222,7 @@ public final class UuidTest
 
     @ParameterizedTest
     @MethodSource("string")
-    public final void parsesVariantFromString(final String expectedFormat, final int expectedVersion, final Variant expectedVariant) throws InvalidDigitsCountException, InvalidVersionException
+    public final void parsesVariantFromString(final String expectedFormat, final int expectedVersion, final Variant expectedVariant) throws InvalidUuidException
     {
         // given an uuid made from a string
         final IUuid uuid = new Uuid(expectedFormat, expectedVersion);
@@ -232,6 +235,26 @@ public final class UuidTest
             "Failed to parse RFC compliant string",
             expectedVariant,
             actualVariant
+        );
+    }
+
+    @Test // (expected = InvalidUuidFormatException.class)
+    public final void expectsHexDigits()
+    {
+        // given an invalid format
+        final String invalidFormat = "00000000-0z00-0000-0000-000000000000";
+
+        // when trying to create a uuid from it
+
+        ThrowingRunnable instanciation = () -> {
+            new Uuid(invalidFormat, 0);
+        };
+
+        // then an exception should be thrown
+        assertThrows(
+            "Uuid should contain only hex digit",
+            InvalidUuidException.class,
+            instanciation
         );
     }
 }

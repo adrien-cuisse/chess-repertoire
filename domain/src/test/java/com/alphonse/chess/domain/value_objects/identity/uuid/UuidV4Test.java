@@ -1,7 +1,9 @@
 
 package com.alphonse.chess.domain.value_objects.identity.uuid;
 
+import com.alphonse.chess.domain.value_objects.identity.uuid.IUuid.InvalidUuidException;
 import com.alphonse.chess.domain.value_objects.identity.uuid.IUuid.Variant;
+import com.alphonse.chess.domain.value_objects.identity.uuid.UuidV4.InvalidUuidV4Exception;
 
 import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -72,7 +74,7 @@ public final class UuidV4Test
         );
     }
 
-    public final static Object[][] equality() throws InvalidBytesCountException, InvalidDigitsCountException, InvalidVersionException
+    public final static Object[][] equality() throws InvalidUuidException, InvalidUuidV4Exception
     {
         final UuidV4 uuid = new UuidV4();
         final IUuid otherInstance = new UuidV4();

@@ -17,15 +17,25 @@ public final class UuidV4 implements IUuid
         {
             this.uuid = new Uuid(randomBytes(), 4, Variant.RFC_VARIANT);
         }
-        catch (InvalidBytesCountException exception)
+        catch (InvalidUuidException exception)
         {
             // nope, 16 bytes were passed
         }
     }
 
-    public UuidV4(final String rfcCompliantString) throws InvalidDigitsCountException, InvalidVersionException
+    /**
+     * @throws InvalidUuidV4Exception - if the given uuid is not a RFC compliant Uuid V4
+     */
+    public UuidV4(final String uuid) throws InvalidUuidV4Exception
     {
-        this.uuid = new Uuid(rfcCompliantString, 4);
+        try
+        {
+            this.uuid = new Uuid(uuid, 4);
+        }
+        catch (InvalidUuidException exception)
+        {
+            throw new InvalidUuidV4Exception(uuid, exception);
+        }
     }
 
     public final boolean equals(final IUuid other)
@@ -63,5 +73,13 @@ public final class UuidV4 implements IUuid
         final byte[] randomBytes = new byte[16];
         generator.nextBytes(randomBytes);
         return randomBytes;
+    }
+
+    public final class InvalidUuidV4Exception extends Exception
+    {
+        public InvalidUuidV4Exception(final String uuid, final Throwable previousException)
+        {
+            super(String.format("%s is not a valid Uuid V4", uuid), previousException);
+        }
     }
 }
